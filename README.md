@@ -18,6 +18,19 @@ creator credit.
 
 ![Rubik's Cube Studio Settings panel with creator credit](docs/screenshots/rubik-cube-studio-settings.png)
 
+### Picture themes
+
+The Look screen below shows the picture theme choices, with Mythical creatures
+selected on the cube.
+
+![Rubik's Cube Studio picture themes with Mythical creatures selected](docs/screenshots/rubik-cube-studio-picture-themes.png)
+
+### More screens
+
+![Rubik's Cube Studio Learn screen with the step-by-step coach](docs/screenshots/rubik-cube-studio-learn.png)
+
+![Rubik's Cube Studio Settings screen](docs/screenshots/rubik-cube-studio-settings-full.png)
+
 ## License
 
 The original Rubik's Cube Studio source code and project documentation are
