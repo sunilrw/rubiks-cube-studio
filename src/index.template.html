@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b1118">
+<title>Rubik's Cube Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Unbounded:wght@500;600&display=swap">
+<style>
+/*__CSS__*/
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <div id="stage" aria-label="3D Rubik's Cube. Drag a sticker to turn its row or column, drag the background to look around, pinch or scroll to zoom."></div>
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div id="hand" aria-hidden="true"><svg id="trail" width="100%" height="100%"><polyline id="trailLine" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg><div id="finger"><i></i><span>&#9757;&#65039;</span></div></div>
+
+  <header class="hud" id="hud">
+    <button class="icon" id="btnMenu" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+    <div class="brand"><b>Rubik's Cube Studio</b><span id="modeChip">Free play &middot; 3&times;3</span></div>
+    <div class="stats" aria-live="off">
+      <div class="chip"><small>Time</small><b id="chipTime">0:00.0</b></div>
+      <div class="chip"><small>Moves</small><b id="chipMoves">0</b></div>
+      <div class="chip hide-s"><small>Turns/s</small><b id="chipTps">0.0</b></div>
+    </div>
+    <button class="icon" id="btnFull" type="button" aria-label="Full screen"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+  </header>
+
+  <div id="inspect" hidden><small>Inspection</small><b id="inspectNum">15</b><span>Look at the cube. The timer starts on your first turn.</span></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="progress" aria-hidden="true"><i id="progressBar"></i></div>
+
+  <section id="card" class="card" hidden aria-label="Coach">
+    <div class="card-top"><span class="pill" id="cardStage">Stage 1 of 7</span><span class="muted" id="cardCount"></span><button class="icon sm" id="cardClose" type="button" aria-label="Close hint">&times;</button></div>
+    <h3 id="cardTitle"></h3>
+    <p id="cardText"></p>
+    <div class="nextmove"><b id="cardTok">R</b><span id="cardWords"></span></div>
+    <div class="chips" id="cardChips"></div>
+    <div class="row">
+      <button class="btn primary" id="cardPlay" type="button">Play this step</button>
+      <button class="btn" id="cardOne" type="button">One move</button>
+      <button class="btn" id="cardAuto" type="button">Solve it for me</button>
+      <button class="btn" id="cardNew" type="button">Refresh</button>
+    </div>
+  </section>
+
+  <nav class="dock" id="dock" aria-label="Quick controls">
+    <button class="btn primary" id="dScramble" type="button">Scramble</button>
+    <button class="btn" id="dUndo" type="button">Undo</button>
+    <button class="btn" id="dHint" type="button">Hint</button>
+    <button class="btn" id="dSpin" type="button" aria-label="Turn the whole cube">Spin</button>
+    <button class="btn" id="dPad" type="button" aria-pressed="false">Moves</button>
+  </nav>
+
+  <div id="pad" class="pad" hidden role="group" aria-label="Turn buttons">
+    <div class="pad-head"><b>Moves</b><select id="padDepth" aria-label="Which layers to turn"><option value="outer">Outer layer</option></select><button class="icon sm" id="padClose" type="button" aria-label="Close moves">&times;</button></div>
+    <div class="pad-grid" id="padGrid"></div>
+  </div>
+
+  <aside id="menu" class="menu" aria-label="Menu">
+    <div class="menu-head">
+      <div class="tabs" role="tablist" id="tabs">
+        <button role="tab" data-tab="play" aria-selected="true" type="button">Play</button>
+        <button role="tab" data-tab="learn" aria-selected="false" type="button">Learn</button>
+        <button role="tab" data-tab="look" aria-selected="false" type="button">Look</button>
+        <button role="tab" data-tab="settings" aria-selected="false" type="button">Settings</button>
+      </div>
+      <button class="icon sm" id="menuClose" type="button" aria-label="Close menu">&times;</button>
+    </div>
+
+    <div class="menu-body">
+      <section class="tabpanel" data-panel="play">
+        <h4>Cube size</h4>
+        <div class="seg" id="sizeSeg" role="group" aria-label="Cube size">
+          <button type="button" data-size="2">2&times;2</button><button type="button" data-size="3">3&times;3</button><button type="button" data-size="4">4&times;4</button><button type="button" data-size="5">5&times;5</button>
+        </div>
+        <p class="note" id="sizeNote"></p>
+
+        <h4>How do you want to play?</h4>
+        <div class="modes" id="modeList" role="group" aria-label="Mode">
+          <button type="button" data-mode="free"><b>Free play</b><span>Turn it your way. Hints are always there.</span></button>
+          <button type="button" data-mode="learn"><b>Learn</b><span>The coach shows each step and explains why.</span></button>
+          <button type="button" data-mode="challenge"><b>Challenge</b><span>No help. Inspection, timer and personal bests.</span></button>
+        </div>
+
+        <h4>Scramble</h4>
+        <div class="row">
+          <button class="btn primary" id="mScramble" type="button">Scramble</button>
+          <button class="btn" id="mDaily" type="button">Daily challenge</button>
+          <button class="btn" id="mSolved" type="button">Solved cube</button>
+        </div>
+        <label class="field">Scramble length <output id="scrLenOut">22</output><input type="range" id="scrLen" min="5" max="80" step="1" value="22"></label>
+        <label class="check"><input type="checkbox" id="chkInspect" checked> 15 second inspection in Challenge mode</label>
+
+        <h4>Patterns</h4>
+        <div class="chipset" id="patterns"></div>
+
+        <h4>Play your own moves</h4>
+        <div class="row nowrap"><input type="text" id="algIn" placeholder="R U R' U'" autocomplete="off" spellcheck="false" aria-label="Moves to play"><button class="btn" id="algPlay" type="button">Play</button></div>
+        <p class="note" id="algNote">Standard notation: R, U', F2. On bigger cubes: Rw (two layers), 2R (second layer).</p>
+        <div class="row"><button class="btn" id="mUndo" type="button">Undo</button><button class="btn" id="mRedo" type="button">Redo</button><button class="btn" id="mRewind" type="button">Rewind to start</button></div>
+        <p class="hist" id="hist"></p>
+
+        <h4>Your best times</h4>
+        <div id="records" class="records"></div>
+      </section>
+
+      <section class="tabpanel" data-panel="learn" hidden>
+        <h4>Coach</h4>
+        <div class="stagelist" id="stageList"></div>
+        <p class="note" id="learnNote"></p>
+        <div class="row">
+          <button class="btn primary" id="lHint" type="button">Hint</button>
+          <button class="btn" id="lAuto" type="button">Solve step by step</button>
+          <button class="btn" id="lBest" type="button">Show the shortest solution</button>
+        </div>
+        <div class="toggles">
+          <label class="check"><input type="checkbox" id="chkHand" checked> Moving hand shows where to swipe</label>
+          <label class="check"><input type="checkbox" id="chkArrows" checked> Glow and arrow on the layer to turn</label>
+          <label class="check"><input type="checkbox" id="chkFollow" checked> Turn the view to the face being used</label>
+        </div>
+
+        <h4>Best ways to solve</h4>
+        <div class="acc" id="methods"></div>
+
+        <h4>Algorithms to learn</h4>
+        <p class="note">Press Play to watch one run on your cube. They work on the faces of the 3&times;3 as labelled.</p>
+        <div class="algs" id="algList"></div>
+      </section>
+
+      <section class="tabpanel" data-panel="look" hidden>
+        <h4>Colours</h4>
+        <div class="swatches" id="colourGrid"></div>
+        <h4>Pictures</h4>
+        <div class="swatches pics" id="pictureGrid"></div>
+        <div class="row"><label class="btn file">Use your own photo<input type="file" id="photoIn" accept="image/*" hidden></label></div>
+        <p class="note">Animals, sea life, mythical creatures, Greek gods, space, fruit and gradient art. Each face is one big picture. Solve the cube to put the picture back together.</p>
+        <h4>Cube style</h4>
+        <div class="chipset" id="styleRow"></div>
+        <div class="chipset" id="bodyRow"></div>
+        <label class="check"><input type="checkbox" id="chkMatte"> Matte finish</label>
+        <h4>Background</h4>
+        <div class="swatches bgs" id="bgGrid"></div>
+        <div class="row"><label class="btn file">Use your own background photo<input type="file" id="bgIn" accept="image/*" hidden></label></div>
+        <label class="check"><input type="checkbox" id="chkAutoBg"> Change the background every solve</label>
+        <label class="check"><input type="checkbox" id="chkRotate"> Slowly turn the cube</label>
+      </section>
+
+      <section class="tabpanel" data-panel="settings" hidden>
+        <h4>Turn speed</h4>
+        <label class="field">Speed <output id="speedOut">Normal</output><input type="range" id="speed" min="0" max="6" step="1" value="2"></label>
+        <h4>Feel</h4>
+        <label class="check"><input type="checkbox" id="chkSound" checked> Sound effects</label>
+        <label class="field">Volume<input type="range" id="vol" min="0" max="100" step="5" value="50"></label>
+        <label class="check"><input type="checkbox" id="chkHaptic" checked> Vibrate on phones</label>
+        <label class="check"><input type="checkbox" id="chkLabels"> Show face letters (U R F D L B)</label>
+        <label class="check"><input type="checkbox" id="chkConfetti" checked> Confetti when solved</label>
+        <h4>Tools</h4>
+        <div class="row"><button class="btn" id="sFull" type="button">Full screen</button><button class="btn" id="sShot" type="button">Save picture</button><button class="btn" id="sView" type="button">Reset view</button></div>
+        <div class="row"><button class="btn danger" id="sReset" type="button">Reset settings and records</button></div>
+        <h4>Keyboard</h4>
+        <ul class="keys">
+          <li><kbd>U</kbd> <kbd>D</kbd> <kbd>L</kbd> <kbd>R</kbd> <kbd>F</kbd> <kbd>B</kbd> turn a face. Hold <kbd>Shift</kbd> to go anticlockwise.</li>
+          <li><kbd>M</kbd> <kbd>E</kbd> <kbd>S</kbd> turn the middle slices (3&times;3 and 5&times;5).</li>
+          <li><kbd>&larr;</kbd> <kbd>&rarr;</kbd> <kbd>&uarr;</kbd> <kbd>&darr;</kbd> turn the whole cube.</li>
+          <li><kbd>Space</kbd> or <kbd>H</kbd> hint. <kbd>N</kbd> scramble. <kbd>Z</kbd> undo. <kbd>Shift</kbd>+<kbd>Z</kbd> redo.</li>
+          <li><kbd>G</kbd> menu. <kbd>P</kbd> moves pad. <kbd>Esc</kbd> closes things.</li>
+        </ul>
+        <p class="note">Built with Three.js and the cubejs two-phase solver (both MIT licensed). Your settings and records stay on this device.</p>
+        <p class="site-credit">Made by Sunil Warrier · MIT License</p>
+      </section>
+    </div>
+  </aside>
+
+  <div id="modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <h2 id="modalTitle"></h2>
+      <div id="modalBody"></div>
+      <div class="row" id="modalActions"></div>
+    </div>
+  </div>
+</div>
+
+<script type="text/plain" id="cubejs-src">/*__CUBEJS__*/</script>
+<script>/*__THREE__*/</script>
+<script>/*__JS__*/</script>
+</body>
+</html>
