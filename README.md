@@ -5,6 +5,11 @@ A complete 3D Rubik's Cube that runs in any modern browser on desktop, phone and
 
 Made by Sunil Warrier. The app credit is in the Settings panel.
 
+## Contributors
+
+- Sunil Warrier — creator and project maintainer
+- OpenAI Codex — AI-assisted development and documentation
+
 ## Screenshots
 
 The Patterns screen is shown first so the available cube patterns are visible
