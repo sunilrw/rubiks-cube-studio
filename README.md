@@ -7,14 +7,14 @@ Made by Sunil Warrier. The app credit is in the Settings panel.
 
 ## Screenshots
 
-The main screen was captured from [rstudio.uti1.com](https://rstudio.uti1.com/).
-The Patterns view shows the built-in pattern choices in the Play menu. The
-Settings view was captured from the updated local build and shows the new
-credit.
-
-![Rubik's Cube Studio running in a desktop browser](docs/screenshots/rubik-cube-studio.png)
+The Patterns screen is shown first so the available cube patterns are visible
+when the repository page opens. The main screen was captured from
+[rstudio.uti1.com](https://rstudio.uti1.com/). The Settings view shows the new
+creator credit.
 
 ![Rubik's Cube Studio Play menu showing the built-in pattern choices](docs/screenshots/rubik-cube-studio-pattern-menu.png)
+
+![Rubik's Cube Studio running in a desktop browser](docs/screenshots/rubik-cube-studio.png)
 
 ![Rubik's Cube Studio Settings panel with creator credit](docs/screenshots/rubik-cube-studio-settings.png)
 
